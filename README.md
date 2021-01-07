@@ -30,4 +30,5 @@ https://lhncbc.nlm.nih.gov/publication/pub9932
 
 ### Additional Scripts
 
-- **generator.py**: Customized generator that yields batches of data 
+- **generator.py**: Customized generator that yields batches of data
+- **fit_generator.py**: function that receives a batch of data from the generator, performs backpropagation and updates the weights in the model
