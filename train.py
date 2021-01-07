@@ -9,6 +9,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Conv2D, Flatten, Activation, MaxPooling2D, Dropout
 
 from generator import generator
+from fit_generator import fit_generator
 import parameters as param
 
 TRAIN_DIR =  param.train_dir
@@ -20,8 +21,8 @@ EPOCHS=param.epochs
 INPUT_SHAPE = (INPUT,INPUT,3)
 
 
-generator_train = generator(TRAIN_DIR, BATCH_SIZE,resize=INPUT)
-generator_val = generator(VAL_DIR, BATCH_SIZE,resize=INPUT)
+generator_train = generator(TRAIN_DIR, BATCH_SIZE, resize=INPUT)
+generator_val = generator(VAL_DIR, BATCH_SIZE, resize=INPUT)
 
 model = Sequential([
   layers.experimental.preprocessing.Rescaling(1./255, input_shape=INPUT_SHAPE),
@@ -29,8 +30,10 @@ model = Sequential([
   layers.MaxPooling2D(),
   layers.Conv2D(32, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
+  layers.Dropout(0.5),
   layers.Conv2D(64, 3, padding='same', activation='relu'),
   layers.MaxPooling2D(),
+  layers.Dropout(0.5),
   layers.Flatten(),
   layers.Dense(128, activation='relu'),
   layers.Dense(2)
@@ -42,25 +45,32 @@ model.compile(optimizer='adam',
 
 model.summary()
 
-history = model.fit_generator(
-        generator_train,
-        steps_per_epoch=len(os.listdir(TRAIN_DIR))// BATCH_SIZE,
-        epochs=EPOCHS,
-        validation_data=generator_val,
-        validation_steps=len(os.listdir(VAL_DIR))// BATCH_SIZE)
+nb_batches_train = len(os.listdir(TRAIN_DIR))//BATCH_SIZE
+nb_batches_val = len(os.listdir(VAL_DIR))//BATCH_SIZE
 
-acc = history.history['accuracy']
-val_acc = history.history['val_accuracy']
+fit_generator(model, generator_train, generator_val, EPOCHS, nb_batches_train, nb_batches_val)
 
-epochs_range = range(EPOCHS)
 
-plt.figure(figsize=(8, 8))
-plt.subplot(1, 2, 1)
-plt.plot(epochs_range, acc, label='Training Accuracy')
-plt.plot(epochs_range, val_acc, label='Validation Accuracy')
-plt.legend(loc='lower right')
-plt.title('Training and Validation Accuracy')
-plt.show()
+
+# history = model.fit_generator(
+#         generator_train,
+#         steps_per_epoch=len(os.listdir(TRAIN_DIR))// BATCH_SIZE,
+#         epochs=EPOCHS,
+#         validation_data=generator_val,
+#         validation_steps=len(os.listdir(VAL_DIR))// BATCH_SIZE)
+#
+# acc = history.history['accuracy']
+# val_acc = history.history['val_accuracy']
+#
+# epochs_range = range(EPOCHS)
+#
+# plt.figure(figsize=(8, 8))
+# plt.subplot(1, 2, 1)
+# plt.plot(epochs_range, acc, label='Training Accuracy')
+# plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+# plt.legend(loc='lower right')
+# plt.title('Training and Validation Accuracy')
+# plt.show()
 
 #
 # model = Sequential()
